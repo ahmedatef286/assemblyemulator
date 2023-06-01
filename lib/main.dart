@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'my_app.dart';
 
+String a7a = 'a7a';
 void main() {
   runApp(const MyApp());
 }
