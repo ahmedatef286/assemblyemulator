@@ -38,7 +38,7 @@ Map<String, int> registerValues = {
 };
 
 void main() {
-  var mipsinstruction = "sub \$t0, \$s1, \$s0";
+  var mipsinstruction = "subi \$t2, \$s0, 10";
   List<String> tokens = mipsinstruction.split(' ');
 
   executeInstruction(tokens);
@@ -59,6 +59,12 @@ void executeInstruction(List<String> tokens) {
     case "div":
       divide(tokens);
       break;
+    case "addi":
+      addi(tokens);
+      break;
+    case "subi":
+    subi(tokens);
+    break;
     default:
       print("Invalid operation: $operation");
   }
@@ -112,5 +118,38 @@ void divide(List<String> tokens) {
   }
 
 }
+
+void addi(tokens){
+  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  int immeadiat = int.parse(tokens[3].replaceAll(",", ""));
+
+  destination=Svalue1+immeadiat;
+  registerValues[tokens[1].replaceAll(",", "")] = destination;
+
+  print(destination);
+  print(registerValues);
+
+  }
+
+
+
+  void subi(tokens){
+  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  int immeadiat = int.parse(tokens[3].replaceAll(",", ""));
+
+  destination=Svalue1-immeadiat;
+  registerValues[tokens[1].replaceAll(",", "")] = destination;
+
+  print(destination);
+  print(registerValues);
+
+
+
+  }
+
+
+  
 
 
