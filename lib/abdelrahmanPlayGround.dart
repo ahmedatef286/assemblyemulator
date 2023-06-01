@@ -38,37 +38,17 @@ Map<String, int> registerValues = {
 };
 
 void main() {
-  var mipsinstruction = "subi \$t2, \$s0, 10";
-  List<String> tokens = mipsinstruction.split(' ');
+  var mipsinstruction = "slt \$s2 \$s0 \$s1";
+  
+  List<String> tokens = mipsinstruction.replaceAll(' ', ',').split(',');
 
-  executeInstruction(tokens);
+  slt(tokens);
+  //slti(tokens); 
+
+  
 }
 
-void executeInstruction(List<String> tokens) {
-  String operation = tokens[0].toLowerCase();
-  switch (operation) {
-    case "add":
-      add(tokens);
-      break;
-    case "sub":
-      subtract(tokens);
-      break;
-    case "mul":
-      multiply(tokens);
-      break;
-    case "div":
-      divide(tokens);
-      break;
-    case "addi":
-      addi(tokens);
-      break;
-    case "subi":
-    subi(tokens);
-    break;
-    default:
-      print("Invalid operation: $operation");
-  }
-}
+
 
 void add(List<String> tokens) {
   int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
@@ -146,10 +126,172 @@ void addi(tokens){
   print(registerValues);
 
 
-
   }
 
 
+
+bool beq(dynamic tokens){
   
+  int Svalue1 = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue2 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  String label=tokens[3].replaceAll(",", "");
+
+
+
+  if (Svalue1==Svalue2){
+
+  return true;
+
+  
+}
+
+
+  return false;
+
+}
+
+
+bool bne(dynamic tokens){
+  
+  int Svalue1 = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue2 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  String label=tokens[3].replaceAll(",", "");
+
+
+
+  if (Svalue1!=Svalue2){
+
+  return true;
+
+  
+}
+
+
+  return false;
+
+}
+
+bool bgt(dynamic tokens){
+  
+  int Svalue1 = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue2 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  String label=tokens[3].replaceAll(",", "");
+
+
+
+  if (Svalue1>Svalue2){
+
+  return true;
+
+  
+}
+
+
+  return false;
+
+}
+
+
+bool blt(dynamic tokens){
+  
+  int Svalue1 = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue2 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  String label=tokens[3].replaceAll(",", "");
+
+
+
+  if (Svalue1<Svalue2){
+
+  return true;
+
+  
+}
+
+
+  return false;
+
+}
+
+
+bool bge(dynamic tokens){
+  
+  int Svalue1 = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue2 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  String label=tokens[3].replaceAll(",", "");
+
+
+
+  if (Svalue1>=Svalue2){
+
+  return true;
+
+  
+}
+
+
+  return false;
+
+}
+
+
+
+bool ble(dynamic tokens){
+  
+  int Svalue1 = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue2 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  String label=tokens[3].replaceAll(",", "");
+
+
+
+  if (Svalue1<=Svalue2){
+
+  return true;
+
+  
+}
+
+
+  return false;
+
+}
+
+
+
+void slti(tokens){
+  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+  int immeadiat =(tokens[3].replaceAll(",", ""));
+
+  if (Svalue1<immeadiat)
+    destination=1;
+
+  registerValues[tokens[1].replaceAll(",", "")] = destination;
+
+
+}
+
+void slt(tokens){
+  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
+  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
+   int Svalue2 = registerValues[tokens[3].replaceAll(",", "")] ?? 0;
+
+  if (Svalue1<Svalue2){
+    destination=1;
+    registerValues[tokens[1].replaceAll(",", "")] = destination;
+
+  }
+    
+
+  else{
+    destination=0;
+    registerValues[tokens[1].replaceAll(",", "")] = destination;
+  }
+   
+
+  print(destination);
+  print(registerValues);
+
+  }
+
 
 
