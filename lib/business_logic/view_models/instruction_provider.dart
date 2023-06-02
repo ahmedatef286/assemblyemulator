@@ -84,6 +84,7 @@ class InstructionProvider extends ChangeNotifier {
     int counter = 0;
     for (String instructionLine in tempInstructionsList) {
       String line = instructionLine.trim();
+      if (line.isEmpty) continue;
       //remove comments from parsing
       if (line.contains('#')) {
         line.replaceRange(line.indexOf('#'), null, '');
@@ -91,16 +92,20 @@ class InstructionProvider extends ChangeNotifier {
       //check if this is a label not an instruction
 
       if (line.contains(':')) {
-        if (line.allMatches(':').length == 1) {
+        if (line.split(':').length - 1 == 1) {
           List<String> parts = line.trim().replaceAll(':', ' :').split(' ');
           //acount for whitespace in the middle
-          parts.removeWhere((element) => element == ' ');
+          parts.removeWhere((element) => element == ' ' || element == '');
           if (parts.length == 2 && parts.first.contains(RegExp(r'[a-z]'))) {
             labelIndecies[parts.first] = instructionsContainer.length;
+          } else {
+            return counter;
           }
+        } else {
+          //if it is wrong returns the index of the wrong line
+
+          return counter;
         }
-        //if it is wrong returns the index of the wrong line
-        return counter;
       }
       //check if systemcall
       else {
@@ -245,24 +250,33 @@ class InstructionProvider extends ChangeNotifier {
       textInstructions.add(instructionLine);
       counter++;
     }
+    for (final map in labelsToCheck.entries) {
+      if (!labelIndecies.containsKey(map.value)) {
+        return map.key;
+      }
+    }
     instructionsContainer.add(FunctionWithParameters(terminate, []));
 
     return -1;
   }
 
   void executeInstruction(BuildContext context) {
-    for (FunctionWithParameters f in instructionsContainer) {
-      if (f.function == terminate) return;
+    while (instructionPointer < instructionsContainer.length) {
+      if (instructionsContainer[instructionPointer].function == terminate) {
+        return;
+      }
       List<dynamic> myList = [];
-      myList.add(f.parameters);
+      myList.add(instructionsContainer[instructionPointer].parameters);
       myList.add(context);
+
       Function.apply(
-        f.function,
+        instructionsContainer[instructionPointer].function,
         myList,
       );
+      instructionPointer++;
     }
     clearInstructions();
-    Provider.of<RegisterMAndMemoryProvider>(context).clear();
+    Provider.of<RegisterMAndMemoryProvider>(context, listen: false).clear();
   }
 
   void clearInstructions() {

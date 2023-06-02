@@ -53,7 +53,7 @@ void add(List<String> tokens, BuildContext context) {
       .getRegsiterValue(tokens[2])!;
 
   Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
-      .updateRegsiterValue(tokens[0], value1 - value2);
+      .updateRegsiterValue(tokens[0], value1 + value2);
 }
 
 void subtract(List<String> tokens, BuildContext context) {

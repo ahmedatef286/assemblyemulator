@@ -64,13 +64,29 @@ class _HomeScreenState extends State<HomeScreen>
           int test = Provider.of<InstructionProvider>(context, listen: false)
               .loadInstructions(textController.text, context);
           if (test == -1) {
-            errorIndex = -1;
+            setState(() {
+              errorIndex = -1;
+            });
             Provider.of<InstructionProvider>(context, listen: false)
                 .executeInstruction(context);
+
             /*  Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => AssembleScreen(),
             )); */
           } else {
+            ScaffoldMessenger.of(context).clearSnackBars();
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+              'Error at line ${test + 1}',
+              style: TextStyle(
+                  color: CustomStyle.colorPalette.white,
+                  fontSize: CustomStyle.fontSizes.mediumFont),
+            )));
+            Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+                .clear();
+            Provider.of<InstructionProvider>(context, listen: false)
+                .clearInstructions();
+
             setState(() {
               errorIndex = test;
             });
