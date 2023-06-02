@@ -122,8 +122,10 @@ void move(List<String> tokens, BuildContext context) {
 void beq(List<String> tokens, BuildContext context) {
   int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .getRegsiterValue(tokens[0])!;
-  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
-      .getRegsiterValue(tokens[1])!;
+  int value2 = (int.tryParse(tokens.elementAt(1))) ??
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getRegsiterValue(tokens[1])!;
+
   if (value1 == value2) {
     Provider.of<InstructionProvider>(context, listen: false)
         .jumpToInstruction(tokens[2]);
@@ -133,8 +135,10 @@ void beq(List<String> tokens, BuildContext context) {
 void bne(List<String> tokens, BuildContext context) {
   int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .getRegsiterValue(tokens[0])!;
-  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
-      .getRegsiterValue(tokens[1])!;
+  int value2 = (int.tryParse(tokens.elementAt(1))) ??
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getRegsiterValue(tokens[1])!;
+
   if (value1 != value2) {
     Provider.of<InstructionProvider>(context, listen: false)
         .jumpToInstruction(tokens[2]);
@@ -144,8 +148,11 @@ void bne(List<String> tokens, BuildContext context) {
 void blt(List<String> tokens, BuildContext context) {
   int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .getRegsiterValue(tokens[0])!;
-  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
-      .getRegsiterValue(tokens[1])!;
+
+  int value2 = (int.tryParse(tokens.elementAt(1))) ??
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getRegsiterValue(tokens[1])!;
+
   if (value1 < value2) {
     Provider.of<InstructionProvider>(context, listen: false)
         .jumpToInstruction(tokens[2]);
@@ -155,8 +162,10 @@ void blt(List<String> tokens, BuildContext context) {
 void ble(List<String> tokens, BuildContext context) {
   int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .getRegsiterValue(tokens[0])!;
-  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
-      .getRegsiterValue(tokens[1])!;
+  int value2 = (int.tryParse(tokens.elementAt(1))) ??
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getRegsiterValue(tokens[1])!;
+
   if (value1 <= value2) {
     Provider.of<InstructionProvider>(context, listen: false)
         .jumpToInstruction(tokens[2]);
@@ -166,8 +175,10 @@ void ble(List<String> tokens, BuildContext context) {
 void bgt(List<String> tokens, BuildContext context) {
   int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .getRegsiterValue(tokens[0])!;
-  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
-      .getRegsiterValue(tokens[1])!;
+  int value2 = (int.tryParse(tokens.elementAt(1))) ??
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getRegsiterValue(tokens[1])!;
+
   if (value1 > value2) {
     Provider.of<InstructionProvider>(context, listen: false)
         .jumpToInstruction(tokens[2]);
@@ -177,8 +188,10 @@ void bgt(List<String> tokens, BuildContext context) {
 void bge(List<String> tokens, BuildContext context) {
   int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .getRegsiterValue(tokens[0])!;
-  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
-      .getRegsiterValue(tokens[1])!;
+  int value2 = (int.tryParse(tokens.elementAt(1))) ??
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getRegsiterValue(tokens[1])!;
+
   if (value1 >= value2) {
     Provider.of<InstructionProvider>(context, listen: false)
         .jumpToInstruction(tokens[2]);
@@ -215,5 +228,10 @@ void terminate() {}
 void loadWord() {}
 void savedWord() {}
 void loadAscii() {}
-void loadImmediate() {}
+void loadImmediate(List<String> tokens, BuildContext context) {
+  int value1 = int.parse(tokens[1]);
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1);
+}
+
 void syscall() {}

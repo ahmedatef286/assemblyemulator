@@ -76,6 +76,8 @@ class InstructionProvider extends ChangeNotifier {
   };
 
   int loadInstructions(String instructions, BuildContext context) {
+    clearInstructions();
+    Provider.of<RegisterMAndMemoryProvider>(context, listen: false).clear();
     instructions = instructions
         .toLowerCase(); //set all to lowercase since mips is not case sensetive
 
@@ -87,7 +89,7 @@ class InstructionProvider extends ChangeNotifier {
       if (line.isEmpty) continue;
       //remove comments from parsing
       if (line.contains('#')) {
-        line.replaceRange(line.indexOf('#'), null, '');
+        line = line.replaceRange(line.indexOf('#'), null, '').trim();
       }
       //check if this is a label not an instruction
 
@@ -177,8 +179,8 @@ class InstructionProvider extends ChangeNotifier {
 
                     //second element must be a number or register and third must be a label
                     if ((int.tryParse(splitLine.elementAt(1)) != null ||
-                            (registeraliases.containsKey(splitLine[0]) ||
-                                registeraliases.containsValue(0))) &
+                            (registeraliases.containsKey(splitLine[1]) ||
+                                registeraliases.containsValue(splitLine[1]))) &
                         splitLine[2].contains(RegExp(r'[a-z]'))) {
                       instructionsContainer.add(FunctionWithParameters(
                           instructionFunctions[operation]!, splitLine));
@@ -226,13 +228,23 @@ class InstructionProvider extends ChangeNotifier {
                         instructionFunctions[operation]!, splitLine));
                   }
                   break;
-                case 'j':
+                case 'li':
                   {
                     //check if all register names are validd
-                    for (final reg in splitLine) {
-                      if (!(registeraliases.containsKey(reg) ||
-                          registeraliases.containsValue(reg))) return counter;
+
+                    if (!(registeraliases.containsKey(splitLine[0]) ||
+                        registeraliases.containsValue(splitLine[0])))
+                      return counter;
+                    if (int.tryParse(splitLine.elementAt(1)) == null) {
+                      return counter;
                     }
+
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, splitLine));
+                  }
+                  break;
+                case 'j':
+                  {
                     instructionsContainer.add(FunctionWithParameters(
                         instructionFunctions[operation]!, splitLine));
                     labelsToCheck[counter] = splitLine[0];
@@ -275,19 +287,20 @@ class InstructionProvider extends ChangeNotifier {
       );
       instructionPointer++;
     }
-    clearInstructions();
-    Provider.of<RegisterMAndMemoryProvider>(context, listen: false).clear();
+    notifyListeners();
   }
 
   void clearInstructions() {
     instructionPointer = 0;
     instructionsContainer = [];
+    textInstructions = [];
+
     labelIndecies = {};
     labelsToCheck = {};
   }
 
   void jumpToInstruction(String label) {
-    instructionPointer = labelIndecies[label]!;
+    instructionPointer = labelIndecies[label]! - 1;
     notifyListeners();
   }
 }
