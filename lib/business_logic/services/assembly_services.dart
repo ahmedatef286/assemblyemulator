@@ -1,3 +1,9 @@
+import 'package:assemblyemulator/business_logic/view_models/instruction_provider.dart';
+import 'package:assemblyemulator/business_logic/view_models/register_provider.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 Map<String, int> registerValues = {
   "\$zero": 0,
   "\$at": 0,
@@ -40,122 +46,174 @@ Map<String, int> registerValues = {
   executeInstruction(tokens);
 } */
 
-void executeInstruction(List<String> tokens) {
-  String operation = tokens[0].toLowerCase();
-  switch (operation) {
-    case "add":
-      add(tokens);
-      break;
-    case "sub":
-      subtract(tokens);
-      break;
-    case "mul":
-      multiply(tokens);
-      break;
-    case "div":
-      divide(tokens);
-      break;
-    case "addi":
-      addi(tokens);
-      break;
-    case "subi":
-      subi(tokens);
-      break;
-    default:
-      print("Invalid operation: $operation");
+void add(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[2])!;
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 - value2);
+}
+
+void subtract(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[2])!;
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 - value2);
+}
+
+void multiply(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[2])!;
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 * value2);
+}
+
+void divide(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[2])!;
+  if (value2 == 0) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('divide by zero')));
+    return;
+  }
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], (value1 ~/ value2));
+}
+
+///////////////
+void addi(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = int.parse(tokens[2]);
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 + value2);
+}
+
+void subi(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = int.parse(tokens[2]);
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 - value2);
+}
+
+///////
+void move(List<String> tokens, BuildContext context) {
+  int value = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value);
+}
+
+////////////
+void beq(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[0])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  if (value1 == value2) {
+    Provider.of<InstructionProvider>(context, listen: false)
+        .jumpToInstruction(tokens[2]);
   }
 }
 
-void add(List<String> tokens) {
-  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
-  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
-  int Svalue2 = registerValues[tokens[3].replaceAll(",", "")] ?? 0;
-
-  destination = Svalue1 + Svalue2;
-  registerValues[tokens[1].replaceAll(",", "")] = destination;
-
-  print("Sum of register values: $destination");
-}
-
-void subtract(List<String> tokens) {
-  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
-  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
-  int Svalue2 = registerValues[tokens[3].replaceAll(",", "")] ?? 0;
-
-  destination = Svalue1 - Svalue2;
-  registerValues[tokens[1].replaceAll(",", "")] = destination;
-  print(registerValues);
-
-  print("Difference of register values: $destination");
-}
-
-void multiply(List<String> tokens) {
-  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
-  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
-  int Svalue2 = registerValues[tokens[3].replaceAll(",", "")] ?? 0;
-
-  destination = Svalue1 * Svalue2;
-  registerValues[tokens[1].replaceAll(",", "")] = destination;
-
-  print("Product of register values: $destination");
-}
-
-void divide(List<String> tokens) {
-  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
-  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
-  int Svalue2 = registerValues[tokens[3].replaceAll(",", "")] ?? 0;
-
-  if (Svalue2 != 0) {
-    destination = Svalue1 ~/ Svalue2;
-    registerValues[tokens[1].replaceAll(",", "")] = destination;
-    print("Division of register values: $destination");
-  } else {
-    print("Error: Division by zero");
+void bne(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[0])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  if (value1 != value2) {
+    Provider.of<InstructionProvider>(context, listen: false)
+        .jumpToInstruction(tokens[2]);
   }
 }
 
-void addi(tokens) {
-  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
-  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
-  int immeadiat = int.parse(tokens[3].replaceAll(",", ""));
-
-  destination = Svalue1 + immeadiat;
-  registerValues[tokens[1].replaceAll(",", "")] = destination;
-
-  print(destination);
-  print(registerValues);
+void blt(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[0])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  if (value1 < value2) {
+    Provider.of<InstructionProvider>(context, listen: false)
+        .jumpToInstruction(tokens[2]);
+  }
 }
 
-void subi(tokens) {
-  int destination = registerValues[tokens[1].replaceAll(",", "")] ?? 0;
-  int Svalue1 = registerValues[tokens[2].replaceAll(",", "")] ?? 0;
-  int immeadiat = int.parse(tokens[3].replaceAll(",", ""));
-
-  destination = Svalue1 - immeadiat;
-  registerValues[tokens[1].replaceAll(",", "")] = destination;
-
-  print(destination);
-  print(registerValues);
+void ble(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[0])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  if (value1 <= value2) {
+    Provider.of<InstructionProvider>(context, listen: false)
+        .jumpToInstruction(tokens[2]);
+  }
 }
 
+void bgt(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[0])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  if (value1 > value2) {
+    Provider.of<InstructionProvider>(context, listen: false)
+        .jumpToInstruction(tokens[2]);
+  }
+}
+
+void bge(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[0])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  if (value1 >= value2) {
+    Provider.of<InstructionProvider>(context, listen: false)
+        .jumpToInstruction(tokens[2]);
+  }
+}
+
+///
+void slt(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[2])!;
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], (value1 < value2) ? 1 : 0);
+}
+
+void slti(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = int.parse(tokens[2]);
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], (value1 < value2) ? 1 : 0);
+}
+
+void jump(List<String> tokens, BuildContext context) {
+  Provider.of<InstructionProvider>(context, listen: false)
+      .jumpToInstruction(tokens[0]);
+}
+
+void terminate() {}
 ////
 void loadWord() {}
 void savedWord() {}
 void loadAscii() {}
 void loadImmediate() {}
-///////
-void move() {}
-////////////
-void beq() {}
-void bne() {}
-void blt() {}
-void ble() {}
-void bgt() {}
-void bge() {}
-
-///
-void slt() {}
-void slti() {}
-void jump() {}
-void jumpAndLink() {}
 void syscall() {}

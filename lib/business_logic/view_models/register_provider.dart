@@ -76,6 +76,12 @@ class RegisterMAndMemoryProvider extends ChangeNotifier {
     "\$fp": "\$30",
     "\$ra": "\$31"
   };
+  void clear() {
+    for (final reg in registers.keys) {
+      registers[reg] = 0;
+    }
+    memory = List.filled(1024, null);
+  }
 
   //memory
   int putVariableInMemory(String variableName, dynamic value) {
@@ -130,7 +136,10 @@ class RegisterMAndMemoryProvider extends ChangeNotifier {
       regName = registerAliases[regName]!;
     }
     if (registers.containsKey(regName)) {
-      registers[regName] = value;
+      if (regName != '\$0') {
+        registers[regName] = value;
+      }
+      notifyListeners();
       return true;
     } else {
       return false;

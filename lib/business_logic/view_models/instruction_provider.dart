@@ -1,9 +1,18 @@
 import 'package:assemblyemulator/business_logic/services/assembly_services.dart';
+import 'package:assemblyemulator/business_logic/view_models/register_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class InstructionProvider extends ChangeNotifier {
-  List<String> instructions =
+  int instructionPointer = 0;
+  List<FunctionWithParameters> instructionsContainer =
       []; //will contain all separate instructions after being parsed
+  List<String> textInstructions = [];
+  List<String> dataInstructions =
+      []; //will contain all separate .data code after being parsed
+
+  Map<String, int> labelIndecies = {};
+  Map<int, String> labelsToCheck = {};
 
   Map<String, int> instructionsAndNumberOfOperands = {
     'add': 3,
@@ -32,7 +41,6 @@ class InstructionProvider extends ChangeNotifier {
     'slti': 3,
     ////
     'j': 1,
-    'jal': 1,
     //
     'syscall': 0,
   };
@@ -63,22 +71,217 @@ class InstructionProvider extends ChangeNotifier {
     'slti': slti,
     ////
     'j': jump,
-    'jal': jumpAndLink,
     //
     'syscall': syscall,
   };
 
-  int loadInstructions(String instructions) {
+  int loadInstructions(String instructions, BuildContext context) {
     instructions = instructions
         .toLowerCase(); //set all to lowercase since mips is not case sensetive
 
     List<String> tempInstructionsList =
         instructions.split('\n'); //split line by line
-    if (tempInstructionsList[0].trim() == '.data') {
-      //contains .data and .text section
+    int counter = 0;
+    for (String instructionLine in tempInstructionsList) {
+      String line = instructionLine.trim();
+      //remove comments from parsing
+      if (line.contains('#')) {
+        line.replaceRange(line.indexOf('#'), null, '');
+      }
+      //check if this is a label not an instruction
 
-    } else {}
+      if (line.contains(':')) {
+        if (line.allMatches(':').length == 1) {
+          List<String> parts = line.trim().replaceAll(':', ' :').split(' ');
+          //acount for whitespace in the middle
+          parts.removeWhere((element) => element == ' ');
+          if (parts.length == 2 && parts.first.contains(RegExp(r'[a-z]'))) {
+            labelIndecies[parts.first] = instructionsContainer.length;
+          }
+        }
+        //if it is wrong returns the index of the wrong line
+        return counter;
+      }
+      //check if systemcall
+      else {
+        if (line.trim() == 'syscall') {
+        } else {
+          List<String> splitLine = line.split(' ');
+          //account for extra white space
+          splitLine.removeWhere((element) => element == ' ');
+          //checking operation type
+          String operation = splitLine.first;
+          splitLine = line
+              .replaceFirst(operation, '')
+              .split(',')
+              .map((e) => e.trim())
+              .toList();
+
+          if (instructionsAndNumberOfOperands.containsKey(operation)) {
+            if (splitLine.length ==
+                instructionsAndNumberOfOperands[operation]!) {
+              final registeraliases = Provider.of<RegisterMAndMemoryProvider>(
+                      context,
+                      listen: false)
+                  .registerAliases;
+              switch (operation) {
+                case 'add':
+                case 'sub':
+                case 'mul':
+                case 'div':
+                  {
+                    //check if all register names are validd
+                    for (final reg in splitLine) {
+                      if (!(registeraliases.containsKey(reg) ||
+                          registeraliases.containsValue(reg))) return counter;
+                    }
+
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, splitLine));
+                  }
+                  break;
+                case 'addi':
+                case 'subi':
+                  {
+                    //check if all register names are validd
+                    for (final reg in splitLine.take(2)) {
+                      if (!(registeraliases.containsKey(reg) ||
+                          registeraliases.containsValue(reg))) return counter;
+                    }
+                    //third element must be a number
+                    if (int.tryParse(splitLine.elementAt(2)) == null) {
+                      return counter;
+                    }
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, splitLine));
+                  }
+                  break;
+                case 'beq':
+                case 'bne':
+                case 'bge':
+                case 'ble':
+                case 'bgt':
+                case 'blt':
+                  {
+                    //check if  register name is validd
+
+                    if (!(registeraliases.containsKey(splitLine[0]) ||
+                        registeraliases.containsValue(0))) return counter;
+                    if (!(registeraliases.containsKey(splitLine[0]) ||
+                        registeraliases.containsValue(0))) return counter;
+
+                    //second element must be a number or register and third must be a label
+                    if ((int.tryParse(splitLine.elementAt(1)) != null ||
+                            (registeraliases.containsKey(splitLine[0]) ||
+                                registeraliases.containsValue(0))) &
+                        splitLine[2].contains(RegExp(r'[a-z]'))) {
+                      instructionsContainer.add(FunctionWithParameters(
+                          instructionFunctions[operation]!, splitLine));
+                      labelsToCheck[counter] = splitLine[2];
+                    } else {
+                      return counter;
+                    }
+                  }
+                  break;
+                case 'slt':
+                  {
+                    //check if all register names are validd
+                    for (final reg in splitLine) {
+                      if (!(registeraliases.containsKey(reg) ||
+                          registeraliases.containsValue(reg))) return counter;
+                    }
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, splitLine));
+                  }
+                  break;
+                case 'slti':
+                  {
+                    //check if all register names are validd
+                    for (final reg in splitLine.take(2)) {
+                      if (!(registeraliases.containsKey(reg) ||
+                          registeraliases.containsValue(reg))) return counter;
+                    }
+                    //third element must be a number
+                    if (int.tryParse(splitLine.elementAt(2)) == null) {
+                      return counter;
+                    }
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, splitLine));
+                  }
+                  break;
+
+                case 'move':
+                  {
+                    //check if all register names are validd
+                    for (final reg in splitLine) {
+                      if (!(registeraliases.containsKey(reg) ||
+                          registeraliases.containsValue(reg))) return counter;
+                    }
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, splitLine));
+                  }
+                  break;
+                case 'j':
+                  {
+                    //check if all register names are validd
+                    for (final reg in splitLine) {
+                      if (!(registeraliases.containsKey(reg) ||
+                          registeraliases.containsValue(reg))) return counter;
+                    }
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, splitLine));
+                    labelsToCheck[counter] = splitLine[0];
+                  }
+                  break;
+                default:
+                  return counter;
+              }
+            }
+          } else {
+            return counter;
+          }
+        }
+      }
+      textInstructions.add(instructionLine);
+      counter++;
+    }
+    instructionsContainer.add(FunctionWithParameters(terminate, []));
 
     return -1;
   }
+
+  void executeInstruction(BuildContext context) {
+    for (FunctionWithParameters f in instructionsContainer) {
+      if (f.function == terminate) return;
+      List<dynamic> myList = [];
+      myList.add(f.parameters);
+      myList.add(context);
+      Function.apply(
+        f.function,
+        myList,
+      );
+    }
+    clearInstructions();
+    Provider.of<RegisterMAndMemoryProvider>(context).clear();
+  }
+
+  void clearInstructions() {
+    instructionPointer = 0;
+    instructionsContainer = [];
+    labelIndecies = {};
+    labelsToCheck = {};
+  }
+
+  void jumpToInstruction(String label) {
+    instructionPointer = labelIndecies[label]!;
+    notifyListeners();
+  }
+}
+
+class FunctionWithParameters {
+  final Function function;
+
+  final List<dynamic> parameters;
+
+  FunctionWithParameters(this.function, this.parameters);
 }
