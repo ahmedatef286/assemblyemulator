@@ -1,10 +1,14 @@
 import 'package:assemblyemulator/business_logic/services/assembly_services.dart';
-import 'package:assemblyemulator/business_logic/view_models/register_provider.dart';
+import 'package:assemblyemulator/business_logic/view_models/register_memory_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class InstructionProvider extends ChangeNotifier {
   int instructionPointer = 0;
+  String outputMessages = '';
+  String input = '';
+  bool enableInput = false;
+  bool showBottomSheet = false;
   List<FunctionWithParameters> instructionsContainer =
       []; //will contain all separate instructions after being parsed
   List<String> textInstructions = [];
@@ -52,6 +56,10 @@ class InstructionProvider extends ChangeNotifier {
     ////////
     'addi': addi,
     'subi': subi,
+    'and': and,
+    'andi': andi,
+    'or': or,
+    'ori': ori,
     ///////
     'lw': loadWord,
     'sw': savedWord,
@@ -100,6 +108,7 @@ class InstructionProvider extends ChangeNotifier {
           parts.removeWhere((element) => element == ' ' || element == '');
           if (parts.length == 2 && parts.first.contains(RegExp(r'[a-z]'))) {
             labelIndecies[parts.first] = instructionsContainer.length;
+            instructionsContainer.add(FunctionWithParameters(doNothing, []));
           } else {
             return counter;
           }
@@ -112,6 +121,8 @@ class InstructionProvider extends ChangeNotifier {
       //check if systemcall
       else {
         if (line.trim() == 'syscall') {
+          instructionsContainer.add(
+              FunctionWithParameters(instructionFunctions[line.trim()]!, []));
         } else {
           List<String> splitLine = line.split(' ');
           //account for extra white space
@@ -136,6 +147,8 @@ class InstructionProvider extends ChangeNotifier {
                 case 'sub':
                 case 'mul':
                 case 'div':
+                case 'and':
+                case 'or':
                   {
                     //check if all register names are validd
                     for (final reg in splitLine) {
@@ -149,6 +162,8 @@ class InstructionProvider extends ChangeNotifier {
                   break;
                 case 'addi':
                 case 'subi':
+                case 'andi':
+                case 'ori':
                   {
                     //check if all register names are validd
                     for (final reg in splitLine.take(2)) {
@@ -233,8 +248,9 @@ class InstructionProvider extends ChangeNotifier {
                     //check if all register names are validd
 
                     if (!(registeraliases.containsKey(splitLine[0]) ||
-                        registeraliases.containsValue(splitLine[0])))
+                        registeraliases.containsValue(splitLine[0]))) {
                       return counter;
+                    }
                     if (int.tryParse(splitLine.elementAt(1)) == null) {
                       return counter;
                     }
@@ -248,6 +264,58 @@ class InstructionProvider extends ChangeNotifier {
                     instructionsContainer.add(FunctionWithParameters(
                         instructionFunctions[operation]!, splitLine));
                     labelsToCheck[counter] = splitLine[0];
+                  }
+                  break;
+                /*  case 'jal':
+                  {
+                    splitLine.add('$counter');
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, splitLine));
+                    labelsToCheck[counter] = splitLine[0];
+                  }
+                  break; */
+                case 'sw':
+                  {
+                    if ((int.tryParse(splitLine[1].trim().split('(').first) ==
+                        null)) return counter;
+                    int offset =
+                        int.parse((splitLine[1].trim().split('(').first));
+                    splitLine[1] = splitLine[1].replaceFirst('(', '');
+                    splitLine[1] = splitLine[1].replaceFirst(')', '');
+                    splitLine[1] =
+                        splitLine[1].replaceFirst('$offset', '').trim();
+                    //check if all register names are validd
+                    for (final reg in splitLine) {
+                      if (!(registeraliases.containsKey(reg) ||
+                          registeraliases.containsValue(reg))) return counter;
+                    }
+                    List<String> params = [];
+                    params.addAll(splitLine);
+                    params.add('$offset');
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, params));
+                  }
+                  break;
+                case 'lw':
+                  {
+                    if ((int.tryParse(splitLine[1].trim().split('(').first) ==
+                        null)) return counter;
+                    int offset =
+                        int.parse((splitLine[1].trim().split('(').first));
+                    splitLine[1] = splitLine[1].replaceFirst('(', '');
+                    splitLine[1] = splitLine[1].replaceFirst(')', '');
+                    splitLine[1] =
+                        splitLine[1].replaceFirst('$offset', '').trim();
+                    //check if all register names are validd
+                    for (final reg in splitLine) {
+                      if (!(registeraliases.containsKey(reg) ||
+                          registeraliases.containsValue(reg))) return counter;
+                    }
+                    List<String> params = [];
+                    params.addAll(splitLine);
+                    params.add('$offset');
+                    instructionsContainer.add(FunctionWithParameters(
+                        instructionFunctions[operation]!, params));
                   }
                   break;
                 default:
@@ -267,14 +335,42 @@ class InstructionProvider extends ChangeNotifier {
         return map.key;
       }
     }
+
     instructionsContainer.add(FunctionWithParameters(terminate, []));
 
     return -1;
   }
 
-  void executeInstruction(BuildContext context) {
+  void executeAllInstructions(BuildContext context) {
     while (instructionPointer < instructionsContainer.length) {
       if (instructionsContainer[instructionPointer].function == terminate) {
+        return;
+      }
+      if (instructionsContainer[instructionPointer].function == doNothing) {
+        instructionPointer++;
+        continue;
+      }
+      List<dynamic> myList = [];
+      myList.add(instructionsContainer[instructionPointer].parameters);
+      myList.add(context);
+
+      Function.apply(
+        instructionsContainer[instructionPointer].function,
+        myList,
+      );
+      instructionPointer++;
+    }
+    notifyListeners();
+  }
+
+  void executeSinleInstruction(BuildContext context) {
+    if (instructionPointer < instructionsContainer.length) {
+      if (instructionsContainer[instructionPointer].function == terminate) {
+        return;
+      }
+      if (instructionsContainer[instructionPointer].function == doNothing) {
+        instructionPointer++;
+        notifyListeners();
         return;
       }
       List<dynamic> myList = [];
@@ -297,6 +393,16 @@ class InstructionProvider extends ChangeNotifier {
 
     labelIndecies = {};
     labelsToCheck = {};
+  }
+
+  void restartInstructions() {
+    instructionPointer = 0;
+    notifyListeners();
+  }
+
+  void toggleInput() {
+    enableInput = !enableInput;
+    notifyListeners();
   }
 
   void jumpToInstruction(String label) {

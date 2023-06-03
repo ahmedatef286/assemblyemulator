@@ -29,13 +29,17 @@ Widget customTextField(
     {required TextEditingController textEditingController,
     required String hintText,
     required double width,
+    bool enabled = true,
     void Function(String)? onchanged,
+    void Function()? onEditingComplete,
     TextInputType? keyboardType,
     FocusNode? focusNode,
     Icon? icon}) {
   return SizedBox(
     width: width,
     child: TextField(
+      enabled: enabled,
+      onEditingComplete: onEditingComplete,
       maxLines: null,
       minLines: 4,
       focusNode: focusNode,

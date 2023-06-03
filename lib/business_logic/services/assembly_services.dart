@@ -1,5 +1,5 @@
 import 'package:assemblyemulator/business_logic/view_models/instruction_provider.dart';
-import 'package:assemblyemulator/business_logic/view_models/register_provider.dart';
+import 'package:assemblyemulator/business_logic/view_models/register_memory_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -56,6 +56,26 @@ void add(List<String> tokens, BuildContext context) {
       .updateRegsiterValue(tokens[0], value1 + value2);
 }
 
+void and(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[2])!;
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 & value2);
+}
+
+void or(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[2])!;
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 | value2);
+}
+
 void subtract(List<String> tokens, BuildContext context) {
   int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .getRegsiterValue(tokens[1])!;
@@ -101,6 +121,15 @@ void addi(List<String> tokens, BuildContext context) {
       .updateRegsiterValue(tokens[0], value1 + value2);
 }
 
+void andi(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = int.parse(tokens[2]);
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 & value2);
+}
+
 void subi(List<String> tokens, BuildContext context) {
   int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .getRegsiterValue(tokens[1])!;
@@ -108,6 +137,15 @@ void subi(List<String> tokens, BuildContext context) {
 
   Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .updateRegsiterValue(tokens[0], value1 - value2);
+}
+
+void ori(List<String> tokens, BuildContext context) {
+  int value1 = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[1])!;
+  int value2 = int.parse(tokens[2]);
+
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value1 | value2);
 }
 
 ///////
@@ -223,15 +261,96 @@ void jump(List<String> tokens, BuildContext context) {
       .jumpToInstruction(tokens[0]);
 }
 
+void jumpAndLink(List<String> tokens, BuildContext context) {
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue('\$ra', int.parse(tokens[1]));
+
+  Provider.of<InstructionProvider>(context, listen: false)
+      .jumpToInstruction(tokens[0]);
+}
+
 void terminate() {}
+void doNothing() {}
 ////
-void loadWord() {}
-void savedWord() {}
-void loadAscii() {}
+void loadWord(List<String> tokens, BuildContext context) {
+  int offset = int.parse(tokens[2]);
+  int sourceAddress =
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+              .getRegsiterValue(tokens[1])! +
+          offset;
+  dynamic value =
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getMemoryValueAtAdress(sourceAddress);
+  if (value == null) {
+    Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+        .updateRegsiterValue(tokens[0], 0);
+    return;
+  }
+  if (value.runtimeType == String) {
+    value = sourceAddress;
+  }
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value);
+}
+
+void savedWord(List<String> tokens, BuildContext context) {
+  int offset = int.parse(tokens[2]);
+  int destinationAddress =
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getRegsiterValue(tokens[1])!;
+  int value = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .getRegsiterValue(tokens[0])!;
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .putValueInMemory(offset + destinationAddress, value);
+}
+
+void loadAscii(List<String> tokens, BuildContext context) {
+  dynamic value =
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getMemoryValueVariableName(tokens[1]);
+  if (value == null) {
+    value = 0;
+  } else if (value.runtimeType == String) {
+    value = Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+        .getVariableAddress(tokens[1]);
+  }
+  Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+      .updateRegsiterValue(tokens[0], value);
+}
+
 void loadImmediate(List<String> tokens, BuildContext context) {
   int value1 = int.parse(tokens[1]);
   Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
       .updateRegsiterValue(tokens[0], value1);
 }
 
-void syscall() {}
+void syscall(BuildContext context) {
+  int operation =
+      Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+          .getRegsiterValue('\$v0')!;
+  switch (operation) {
+    case 1:
+      {
+        int valueToPrint =
+            Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+                .getRegsiterValue('\$a0')!;
+      }
+
+      break;
+
+    case 5:
+      break;
+
+    case 4:
+      int valueAddressToPrint =
+          Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+              .getRegsiterValue('\$a0')!;
+      String valueToPrint =
+          Provider.of<RegisterMAndMemoryProvider>(context, listen: false)
+              .getMemoryValueAtAdress(valueAddressToPrint);
+
+      break;
+
+    default:
+  }
+}

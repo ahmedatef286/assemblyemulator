@@ -1,5 +1,5 @@
 import 'package:assemblyemulator/business_logic/view_models/instruction_provider.dart';
-import 'package:assemblyemulator/business_logic/view_models/register_provider.dart';
+import 'package:assemblyemulator/business_logic/view_models/register_memory_provider.dart';
 import 'package:assemblyemulator/custom_style.dart';
 import 'package:assemblyemulator/screens/assemble/assemble_screen.dart';
 import 'package:assemblyemulator/screens/home/edit_body.dart';
@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen>
     ),
     Tab(
       text: 'Registers',
-      icon: Icon(Icons.storage_rounded),
+      icon: Icon(Icons.select_all_rounded),
     ),
   ];
   @override
@@ -61,18 +61,20 @@ class _HomeScreenState extends State<HomeScreen>
           Icons.construction_rounded,
         ),
         onPressed: () {
+          ////////////////loading and running assmebly code//////////////////////
+          //chck if it compiled correctly , -1 = success
           int test = Provider.of<InstructionProvider>(context, listen: false)
               .loadInstructions(textController.text, context);
           if (test == -1) {
             setState(() {
               errorIndex = -1;
             });
-            Provider.of<InstructionProvider>(context, listen: false)
-                .executeInstruction(context);
+            /*   Provider.of<InstructionProvider>(context, listen: false)
+                .executeInstruction(context); */
 
-            /*  Navigator.of(context).push(MaterialPageRoute(
+            Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => AssembleScreen(),
-            )); */
+            ));
           } else {
             ScaffoldMessenger.of(context).clearSnackBars();
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(

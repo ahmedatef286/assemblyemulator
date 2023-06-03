@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 
 class RegisterMAndMemoryProvider extends ChangeNotifier {
-  List<dynamic> memory = List.filled(1024,
-      null); // in mips registers only hold int data, so when a variable of type string is created and stored in $a0 for example ,this list will hold the value and the register will store the index of the value of that variable an
+  List<dynamic> memory = List.filled(1024, null);
+
+  // in mips registers only hold int data, so when a variable of type string is created and stored in $a0 for example ,this list will hold the value and the register will store the index of the value of that variable an
 
   Map<String, int> variableMemoryAddress = {};
 
@@ -97,8 +98,15 @@ class RegisterMAndMemoryProvider extends ChangeNotifier {
     }
   }
 
+  void putValueInMemory(int address, dynamic value) {
+    //puts variable in memory , returns address
+    if (address >= 0 && address < memory.length) {
+      memory[address] = value;
+    }
+  }
+
   dynamic getMemoryValueAtAdress(int address) {
-    if (address < memory.length && address >= 9) {
+    if (address < memory.length && address >= 0) {
       return memory[address];
     } else {
       return null;

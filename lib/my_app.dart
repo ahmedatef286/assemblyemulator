@@ -1,5 +1,5 @@
 import 'package:assemblyemulator/business_logic/view_models/instruction_provider.dart';
-import 'package:assemblyemulator/business_logic/view_models/register_provider.dart';
+import 'package:assemblyemulator/business_logic/view_models/register_memory_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
