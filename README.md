@@ -12,7 +12,7 @@ Run tab allowing line-by-line execution vs. executing all commands.
 
 
 
-![WhatsApp Image 2023-09-30 at 10 48 53 AM](https://github.com/ahmedatef286/assemblyemulator/assets/89429256/d4ed6f7f-5880-49bd-a100-316990d90f17)
-![WhatsApp Image 2023-09-30 at 10 48 53 AM (1)](https://github.com/ahmedatef286/assemblyemulator/assets/89429256/8aae0cae-53d2-46b9-9f2e-0ef43e8a0546)
-![WhatsApp Image 2023-09-30 at 10 48 53 AM (2)](https://github.com/ahmedatef286/assemblyemulator/assets/89429256/bf3eaf2b-8ce6-475b-a920-8521b685b23d)
+![WhatsApp Image 2023-09-30 at 10 48 53 AM](https://github.com/ahmedatef286/assemblyemulator/assets/89429256/d4ed6f7f-5880-49bd-a100-316990d90f17) ![WhatsApp Image 2023-09-30 at 10 48 53 AM (1)](https://github.com/ahmedatef286/assemblyemulator/assets/89429256/8aae0cae-53d2-46b9-9f2e-0ef43e8a0546) ![WhatsApp Image 2023-09-30 at 10 48 53 AM (2)](https://github.com/ahmedatef286/assemblyemulator/assets/89429256/bf3eaf2b-8ce6-475b-a920-8521b685b23d)
+
+
 
